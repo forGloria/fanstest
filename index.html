@@ -30,19 +30,18 @@
   --f-num:"Saira","Avenir Next","Segoe UI",sans-serif;
 }
 @media (prefers-color-scheme: dark){
-  /* 跟淺色同一套邏輯，只是上下顛倒：
-     淺色＝淡底 ＋ 中紫色團 ＋ 白玻璃；深色＝深紫底 ＋ 亮紫色團 ＋ 白玻璃 */
+  /* 紫色配深藍：深藍打底比較安靜，紫在上面才跳得出來，米白當文字 */
   :root{
-    --bg:#332544;                                   /* 比純黑亮一階，看久不費力 */
-    --glass:rgba(255,255,255,.16); --glass2:rgba(255,255,255,.26);
-    --ink:#F4F0FA;                                  /* 近白帶一點紫，避免純白的光暈 */
-    --muted:#CEC2E6;
-    --accent:#CEC2E6;
-    --onaccent:#2C1F3C;
-    --line:rgba(244,240,250,.2);
-    --sh:0 10px 40px rgba(0,0,0,.38);
-    --sh-s:0 4px 14px rgba(0,0,0,.3);
-    --g-top:#4B3568; --g-mid:#3A2850; --g-bot:#261B34;   /* 深色維持上亮下深 */
+    --bg:#232B3D;
+    --glass:rgba(255,255,255,.14); --glass2:rgba(255,255,255,.22);
+    --ink:#E4DED5;                                  /* 米白，暖色壓住深藍的冷 */
+    --muted:#B3A2C6;                                /* 紫 */
+    --accent:#B3A2C6;
+    --onaccent:#1E2535;
+    --line:rgba(228,222,213,.2);
+    --sh:0 10px 40px rgba(0,0,0,.42);
+    --sh-s:0 4px 14px rgba(0,0,0,.34);
+    --g-top:#5A4A7A; --g-mid:#3A3A5A; --g-bot:#1E2638;   /* 紫在上，往下轉深藍 */
     --grain:.2; --grain-mode:soft-light;
   }
 }
@@ -116,17 +115,17 @@ button{font-family:inherit;cursor:pointer}
 .clouds i{position:absolute;animation:drift linear infinite;line-height:0}
 .clouds i svg{display:block}
 @media (prefers-color-scheme: dark){
-  .clouds{color:rgba(244,240,250,.16)}
+  .clouds{color:rgba(228,222,213,.15)}
 
   /* 次要按鈕：玻璃底配近白字會糊成一片，改用深底亮字 */
   .big.ghost{
-    background:rgba(44,31,60,.72);
+    background:rgba(30,37,53,.72);
     color:var(--ink);
-    box-shadow:var(--sh-s), inset 0 0 0 1px rgba(244,240,250,.28);
+    box-shadow:var(--sh-s), inset 0 0 0 1px rgba(228,222,213,.28);
   }
-  .btab{color:var(--ink);box-shadow:inset 0 0 0 1px rgba(244,240,250,.2)}
+  .btab{color:var(--ink);box-shadow:inset 0 0 0 1px rgba(228,222,213,.2)}
   .btab.on{box-shadow:0 6px 18px rgba(0,0,0,.34)}
-  .field{background:rgba(44,31,60,.6);box-shadow:inset 0 0 0 1px rgba(244,240,250,.18)}
+  .field{background:rgba(30,37,53,.6);box-shadow:inset 0 0 0 1px rgba(228,222,213,.18)}
   .panel,.audio-box,.opt,.rv,.card-out,.race{
     box-shadow:var(--sh),
                inset 0 1px 0 rgba(255,255,255,.26),
@@ -332,7 +331,7 @@ body.inplay .app{padding-bottom:12px}
       <input class="field" id="nick" maxlength="12" placeholder="最多 12 個字">
     </label>
     <button class="big" id="btnStart">開始</button>
-    <button class="big ghost" id="btnBoard" style="margin-top:10px">今日排行</button>
+    <button class="big ghost" id="btnBoard" style="margin-top:10px">排行榜</button>
     <div id="best" class="audio-note" style="text-align:center"></div>
   </div>
 </section>
@@ -362,8 +361,8 @@ body.inplay .app{padding-bottom:12px}
 <section id="scBoard" class="hide">
   <div class="title" style="margin:40px 0 14px;font-size:26px">排行榜</div>
   <div class="btabs">
-    <button class="btab on" id="bTabDay">今日</button>
-    <button class="btab" id="bTabAll">總排行</button>
+    <button class="btab on" id="bTabAll">總排行</button>
+    <button class="btab" id="bTabDay">今日</button>
   </div>
   <div class="boardday" id="boardDay" style="margin-top:12px"></div>
   <div class="panel" style="margin-top:18px">
@@ -631,7 +630,7 @@ document.addEventListener("pointerdown", e=>{
    要啟用：去 Firebase 建一個 Realtime Database，把它的網址貼在下面。
    長得像 https://xxxxx-default-rtdb.asia-southeast1.firebasedatabase.app
    留空的話排行榜不會運作，遊戲其他部分照常。 */
-const FIREBASE_DB = "https://gemfanstest-default-rtdb.asia-southeast1.firebasedatabase.app/";
+const FIREBASE_DB = "";
 const BOARD_SIZE  = 30;     // 每個榜取前幾名
 const MIN_SECONDS = 7;      // 低於這個秒數視為異常，不上榜
 
@@ -688,7 +687,7 @@ function renderBoard(el, rows, mine){
   });
 }
 
-let boardMode = "day";          // "day" 或 "all"
+let boardMode = "all";          // 預設先看總排行
 async function showBoard(mode){
   if(mode) boardMode = mode;
   show("scBoard");
@@ -1070,7 +1069,7 @@ $("btnStart").onclick = ()=>{
   });
 };
 $("btnAgain").onclick = ()=>{ show("scStart"); refreshBest(); };
-$("btnBoard").onclick = ()=>showBoard("day");
+$("btnBoard").onclick = ()=>showBoard("all");
 $("bTabDay").onclick = ()=>showBoard("day");
 $("bTabAll").onclick = ()=>showBoard("all");
 $("btnBoardBack").onclick = ()=>{ show("scStart"); refreshBest(); };
